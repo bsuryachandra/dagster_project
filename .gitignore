@@ -1,0 +1,17 @@
+cd /path/to/your/dagster_project
+
+# initialize git
+git init
+
+# create .gitignore first (important!)
+```
+
+Create a `.gitignore` file:
+```
+.venv/
+dagster_env/
+__pycache__/
+*.pyc
+.env
+dagster_home/
+logs/
