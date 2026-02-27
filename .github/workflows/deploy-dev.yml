@@ -1,15 +1,16 @@
-name: Deploy to DEV
+name: Validate PR
 
 on:
   pull_request:
     branches: [main]
 
 jobs:
-  deploy-dev:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v4
@@ -20,7 +21,30 @@ jobs:
         run: |
           sudo apt update
           sudo apt install python3-pip python3-venv git -y
-          python3 -m venv dagster_env
-          source dagster_env/bin/activate
-          python -m pip install --upgrade pip
+
+      - name: Create virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+
+      - name: Install Python packages
+        run: |
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install dagster==1.12.4 dagster-dg-cli dagster-webserver
           pip install -r requirements.txt
+
+      - name: Check Python version
+        run: |
+          source venv/bin/activate
+          python --version
+
+      - name: Check dagster version
+        run: |
+          source venv/bin/activate
+          dagster --version
+
+      - name: Check definitions load
+        run: |
+          source venv/bin/activate
+          python -c "from dagster_project.definitions import defs; print('Definitions OK:', defs)"
