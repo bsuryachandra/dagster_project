@@ -1,0 +1,18 @@
+
+[project]
+name = "dagster-project"
+version = "0.1.0"
+dependencies = [
+    "dagster==1.12.4",
+    "dagster-dg-cli",
+    "dagster-webserver"
+]
+
+[tool.dg]
+directory_type = "project"
+
+[tool.dg.project]
+root_module = "dagster_project"
+registry_modules = [
+    "dagster_project.components.*",
+]

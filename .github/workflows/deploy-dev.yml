@@ -37,14 +37,20 @@ jobs:
       - name: Check Python version
         run: |
           source venv/bin/activate
+          mkdir -p ~/dagster_home
           python --version
-
-      - name: Check dagster version
-        run: |
-          source venv/bin/activate
           dagster --version
+          pip install -e .
+          dg check defs
 
-      - name: Check definitions load
+      - name: Run dagster daemon
         run: |
           source venv/bin/activate
-          python -c "from dagster_project.definitions import defs; print('Definitions OK:', defs)"
+          export DAGSTER_HOME=~/dagster_home
+          dagster-daemon run
+
+      - name: Run dagster webserver
+        run: |
+          source venv/bin/activate
+          export DAGSTER_HOME=~/dagster_home
+          dagster-webserver -h 0.0.0.0 -p 3000 -w workspace.yaml
