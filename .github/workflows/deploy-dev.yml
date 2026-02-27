@@ -43,14 +43,35 @@ jobs:
           pip install -e .
           dg check defs
 
-      - name: Run dagster daemon
+      - name: Start Dagster Daemon
         run: |
           source venv/bin/activate
           export DAGSTER_HOME=~/dagster_home
-          dagster-daemon run
+          dagster-daemon run &                    # ← & runs it in background
+          echo $! > /tmp/dagster-daemon.pid       # ← save process ID
+          sleep 10                                # ← wait for daemon to start
 
-      - name: Run dagster webserver
+      - name: Check Daemon is healthy
+        run: |
+          source venv/bin/activate
+          dagster-daemon health-check             # ← check daemon is running ok
+
+      - name: Start Dagster Webserver
         run: |
           source venv/bin/activate
           export DAGSTER_HOME=~/dagster_home
-          dagster-webserver -h 0.0.0.0 -p 3000 -w workspace.yaml
+          dagster-webserver -h 0.0.0.0 -p 3000 -w workspace.yaml &
+          echo $! > /tmp/dagster-webserver.pid
+          sleep 10                                # ← wait for webserver to start
+
+      - name: Check Webserver is healthy
+        run: |
+          curl --fail http://localhost:3000/server_info || exit 1
+          echo "Webserver is up!"
+
+      - name: Stop Daemon and Webserver
+        if: always()                              # ← runs even if previous steps fail
+        run: |
+          kill $(cat /tmp/dagster-daemon.pid)     || true
+          kill $(cat /tmp/dagster-webserver.pid)  || true
+          echo "Services stopped"
