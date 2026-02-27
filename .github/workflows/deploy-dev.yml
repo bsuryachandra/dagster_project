@@ -54,7 +54,7 @@ jobs:
       - name: Check Daemon is healthy
         run: |
           source venv/bin/activate
-          dagster-daemon health-check             # ← check daemon is running ok
+          dagster-daemon liveness-check             # ← check daemon is running ok
 
       - name: Start Dagster Webserver
         run: |
